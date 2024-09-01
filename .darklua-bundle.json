@@ -1,0 +1,16 @@
+{
+    "bundle": {
+        "modules_identifier": "__BUNDLE",
+        "require_mode": {
+            "name": "path"
+        }
+    },
+    "rules": [
+        {
+            "rule": "remove_comments",
+            "except": ["^-- selene", "^-- stylua"]
+        },
+        "remove_types",
+        "remove_unused_variable"
+    ]
+}

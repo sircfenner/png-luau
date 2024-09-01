@@ -1,0 +1,30 @@
+{
+    "name": "@sircfenner/png-luau",
+    "version": "0.1.0",
+    "description": "Luau library for working with PNG files",
+    "license": "MIT",
+    "author": "sircfenner <sircfenner@users.noreply.github.com>",
+    "homepage": "https://github.com/sircfenner/png-luau#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/sircfenner/png-luau.git"
+    },
+    "main": "src/init.luau",
+    "scripts": {
+        "build": "sh ./scripts/build.sh",
+        "clean": "rm -rf node_modules build temp",
+        "format": "stylua .",
+        "lint": "sh ./scripts/analyze.sh && selene src",
+        "lint:luau": "sh ./scripts/analyze.sh",
+        "lint:selene": "selene src",
+        "test": "sh ./scripts/run-tests.sh",
+        "style-check": "stylua . --check",
+        "verify-pack": "npm pack --dry-run"
+    },
+    "keywords": [
+        "luau"
+    ],
+    "devDependencies": {
+        "sharp": "^0.33.5"
+    }
+}

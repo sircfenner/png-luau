@@ -1,0 +1,6 @@
+{
+	"luau-lsp.sourcemap.autogenerate": false,
+	"luau-lsp.require.mode": "relativeToFile",
+	"luau-lsp.completion.imports.requireStyle": "alwaysRelative",
+	"luau-lsp.platform.type": "standard"
+}

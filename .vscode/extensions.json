@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "johnnymorganz.luau-lsp",
+    "johnnymorganz.stylua",
+    "github.vscode-github-actions",
+    "Kampfkarren.selene-vscode"
+  ]
+}

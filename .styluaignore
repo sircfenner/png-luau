@@ -1,0 +1,6 @@
+/temp
+/build
+/node_modules
+
+**/*.d.lua
+**/*.d.luau

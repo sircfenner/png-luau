@@ -1,0 +1,15 @@
+**/*.rbxm
+**/*.rbxl
+**/*.rbxl.lock
+
+/temp
+/node_modules
+/build
+
+.yarn
+
+/globalTypes.d.lua
+
+**/sourcemap.json
+
+/notes.txt

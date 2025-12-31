@@ -1,12 +1,12 @@
 --!native
 --!optimize 2
 
-local ChunkTypes = require("./ChunkTypes")
-local Types = require("./Types")
+local ChunkTypes = require("@self/ChunkTypes")
+local Types = require("@self/Types")
 
-local chunkReaders = require("./chunks")
-local crc32 = require("./crc32")
-local inflate = require("./inflate")
+local chunkReaders = require("@self/chunks")
+local crc32 = require("@self/crc32")
+local inflate = require("@self/inflate")
 
 local COLOR_TYPE_CHANNELS = {
 	[0] = 1,

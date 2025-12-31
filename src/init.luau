@@ -6,7 +6,7 @@ local Types = require("@self/Types")
 
 local chunkReaders = require("@self/chunks")
 local crc32 = require("@self/crc32")
-local inflate = require("@self/inflate")
+local zlib = require("@self/zlib")
 
 local COLOR_TYPE_CHANNELS = {
 	[0] = 1,
@@ -172,7 +172,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 
 	local idx = 0
 	local working = buffer.create(rawSize)
-	local inflatedSize = inflate(compressedData, working)
+	local inflatedSize = zlib.inflate(compressedData, working)
 	assert(inflatedSize == rawSize, "decompressed data size mismatch")
 
 	local rgba8 = buffer.create(width * height * 4)

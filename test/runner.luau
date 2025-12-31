@@ -5,21 +5,23 @@ local serde = require("@lune/serde") :: any
 local PNG = require("../src")
 local base64 = require("./base64")
 
-type Test = {
-	folder: string,
-	name: string,
-	key: string,
-	checkCRC: boolean,
-	success: true,
-	rgb8: string,
-} | {
-	folder: string,
-	name: string,
-	key: string,
-	checkCRC: boolean,
-	success: false,
-	message: string,
-}
+type Test =
+	{
+		folder: string,
+		name: string,
+		key: string,
+		checkCRC: boolean,
+		success: true,
+		rgb8: string,
+	}
+	| {
+		folder: string,
+		name: string,
+		key: string,
+		checkCRC: boolean,
+		success: false,
+		message: string,
+	}
 
 local tests = serde.decode("json", fs.readFile("./temp/tests.json")) :: { Test }
 

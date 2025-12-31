@@ -13,26 +13,14 @@ Extra information:
 
 ## Installation
 
-This library is built for Roblox, [Lune](https://lune-org.github.io/docs), and standalone Luau.
+This library is built for standalone Luau, Roblox projects, and other Luau runtimes such as [Lune](https://github.com/lune-org/lune).
 
 ### Wally
 
 Add `png-luau` to your `wally.toml`:
 
 ```toml
-png-luau = "sircfenner/png-luau@0.1.0"
-```
-
-### NPM & yarn
-
-Add `@sircfenner/png-luau` to your dependencies:
-
-```bash
-npm install @sircfenner/png-luau
-```
-
-```bash
-yarn add @sircfenner/png-luau
+png-luau = "sircfenner/png-luau@0.2.0"
 ```
 
 ### Releases

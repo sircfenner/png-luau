@@ -1,4 +1,3 @@
-local ChunkTypes = require("../ChunkTypes")
 local Types = require("../Types")
 
 local COLOR_TYPE_BIT_DEPTH = {
@@ -9,7 +8,7 @@ local COLOR_TYPE_BIT_DEPTH = {
 	[6] = { 8, 16 },
 }
 
-local function read(buf: buffer, chunk: Types.Chunk): ChunkTypes.IHDR
+local function read(buf: buffer, chunk: Types.Chunk): Types.IHDRChunk
 	assert(chunk.length == 13, "IHDR data must be 13 bytes")
 
 	local offset = chunk.offset

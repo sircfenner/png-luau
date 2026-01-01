@@ -1,7 +1,6 @@
 --!native
 --!optimize 2
 
-local ChunkTypes = require("@self/ChunkTypes")
 local Types = require("@self/Types")
 
 local chunkReaders = require("@self/chunks")
@@ -26,7 +25,6 @@ local INTERLACE_COL_INCR = { 8, 8, 4, 4, 2, 2, 1 }
 local SIGNATURE = "\x89PNG\x0D\x0A\x1A\x0A"
 
 export type PNG = Types.PNG
-export type Color = Types.Color
 
 export type DecodeOptions = {
 	allowIncorrectCRC: boolean?,
@@ -77,7 +75,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 		end
 	end
 
-	local header: ChunkTypes.IHDR
+	local header: Types.IHDRChunk
 	local headerChunk = chunks[1]
 	assert(headerChunk.type == "IHDR", "first chunk must be IHDR")
 	for i = 2, #chunks do
@@ -102,7 +100,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 	assert(dataChunkIndex0 > 0, "no IDAT chunks")
 	assert(compressedDataLength > 0, "no image data in IDAT chunks")
 
-	local palette: ChunkTypes.PLTE?
+	local palette: Types.PLTEChunk?
 	local paletteChunkIndex = -1
 	for i, chunk in chunks do
 		if chunk.type == "PLTE" then
@@ -117,7 +115,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 		assert(palette ~= nil, "color type requires a PLTE chunk")
 	end
 
-	local transparencyData: ChunkTypes.tRNS?
+	local transparencyData: Types.tRNSChunk?
 	for i, chunk in chunks do
 		if chunk.type == "tRNS" then
 			assert(transparencyData == nil, "multiple tRNS chunks are not allowed")
@@ -335,16 +333,14 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 		end
 	end
 
-	local function readPixel(x: number, y: number): Types.Color
+	local function readPixel(x: number, y: number)
 		assert(x >= 1 and x <= width and y >= 1 and y <= height, "pixel out of range")
 
 		local i = ((y - 1) * width + x - 1) * 4
-		return {
-			r = buffer.readu8(rgba8, i),
-			g = buffer.readu8(rgba8, i + 1),
-			b = buffer.readu8(rgba8, i + 2),
-			a = buffer.readu8(rgba8, i + 3),
-		}
+		return buffer.readu8(rgba8, i),
+			buffer.readu8(rgba8, i + 1),
+			buffer.readu8(rgba8, i + 2),
+			buffer.readu8(rgba8, i + 3)
 	end
 
 	return {

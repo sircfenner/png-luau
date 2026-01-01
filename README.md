@@ -1,6 +1,6 @@
 # png-luau
 
-PNG encoder/decoder for Luau. For decoding, supports all valid PNG files, bit depths, color types, interlacing, and transparency chunks.
+PNG encoder/decoder for Luau. The decoder supports all valid PNG files, bit depths, color types, interlacing, and transparency chunks.
 
 ## Installation
 
@@ -38,26 +38,13 @@ This returns a table with the following type:
 	width: number,
 	height: number,
 	pixels: buffer,
-	readPixel: (x: number, y: number) -> Color
+	readPixel: (x: number, y: number) -> (number, number, number, number)
 }
 ```
 
 The `pixels` buffer contains the decoded pixels in 32-bit RGBA format, top-to-bottom and left-to-right.
 
-The `readPixel` function takes a pixel coordinate starting from (1, 1) in the top-left corner and returns the color information for that pixel.
-
-The type of a `Color` is:
-
-```Luau
-{
-	r: number,
-	g: number,
-	b: number,
-	a: number,
-}
-```
-
-Each component of a `Color` is an integer between 0 and 255. The `a` component represents alpha, where 0 is fully transparent and 255 is fully opaque.
+The `readPixel` function takes a pixel coordinate starting from (1, 1) in the top-left corner and returns the color information for that pixel (red, green, blue, alpha in the range 0-255).
 
 The `decode` function takes an optional second parameter, which is a table specifying decoding options. Currently, the only valid option is `allowIncorrectCRC`, a boolean which defaults to false. It exists only for testing purposes and may be removed in future versions.
 
@@ -86,9 +73,9 @@ This returns a buffer containing the encoded PNG file.
 Known limitations:
 
 -   Pixel data for encoding must be in 32-bit RGBA format as described above
--   Images will be encoded in this same format - there is no support for writing other bit depths or color types yet
+-   Images will be encoded in this same format - there is no support for writing other bit depths or color types
 -   Encoded images will never be interlaced or use transparency chunks
--   As with encoding, the Luau buffer size cap of 1GB limits the maximum size of image data and encoded files
+-   As with decoding, the Luau buffer size cap of 1GB limits the maximum size of image data and encoded files
 
 ## License
 

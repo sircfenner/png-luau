@@ -18,6 +18,7 @@ jobs:
             - uses: Roblox/setup-foreman@v3
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
+                  allow-external-github-orgs: true
 
             - uses: actions/setup-node@v3
               with:

@@ -1,7 +1,6 @@
 /temp
 /node_modules
 /build
-/test
 
 /globalTypes.d.lua
 

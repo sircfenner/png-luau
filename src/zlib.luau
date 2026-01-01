@@ -518,7 +518,7 @@ local function deflate(input: buffer): (buffer, number)
 	local checksum = adler32(input, 0, buffer.len(input))
 	buffer.writeu32(output, writeOffset, bit32.byteswap(checksum))
 
-	return output, writeOffset
+	return output, writeOffset + 4
 end
 
 return {

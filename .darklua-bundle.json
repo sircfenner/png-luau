@@ -10,7 +10,6 @@
             "rule": "remove_comments",
             "except": ["^-- selene", "^-- stylua"]
         },
-        "remove_types",
         "remove_unused_variable",
         {
             "rule": "append_text_comment",
@@ -22,7 +21,7 @@
         },
         {
             "rule": "append_text_comment",
-            "text": "!nocheck"
+            "text": "!strict"
         }
     ]
 }

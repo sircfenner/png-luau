@@ -1,4 +1,3 @@
-local ChunkTypes = require("../ChunkTypes")
 local Types = require("../Types")
 
 local function readU16(buf: buffer, offset: number, depth: number)
@@ -12,9 +11,9 @@ end
 local function read(
 	buf: buffer,
 	chunk: Types.Chunk,
-	header: ChunkTypes.IHDR,
-	palette: ChunkTypes.PLTE?
-): ChunkTypes.tRNS
+	header: Types.IHDRChunk,
+	palette: Types.PLTEChunk?
+): Types.tRNSChunk
 	local gray = -1
 	local red = -1
 	local green = -1

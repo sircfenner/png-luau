@@ -2,7 +2,7 @@
     "bundle": {
         "modules_identifier": "__BUNDLE",
         "require_mode": {
-            "name": "path"
+            "name": "luau"
         }
     },
     "rules": [
@@ -10,7 +10,18 @@
             "rule": "remove_comments",
             "except": ["^-- selene", "^-- stylua"]
         },
-        "remove_types",
-        "remove_unused_variable"
+        "remove_unused_variable",
+        {
+            "rule": "append_text_comment",
+            "text": "!optimize 2"
+        },
+        {
+            "rule": "append_text_comment",
+            "text": "!native"
+        },
+        {
+            "rule": "append_text_comment",
+            "text": "!strict"
+        }
     ]
 }

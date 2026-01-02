@@ -1,7 +1,6 @@
-local ChunkTypes = require("../ChunkTypes")
 local Types = require("../Types")
 
-local function read(buf: buffer, chunk: Types.Chunk, header: ChunkTypes.IHDR): ChunkTypes.PLTE
+local function read(buf: buffer, chunk: Types.Chunk, header: Types.IHDRChunk): Types.PLTEChunk
 	assert(chunk.length % 3 == 0, "malformed PLTE chunk")
 
 	local count = chunk.length / 3

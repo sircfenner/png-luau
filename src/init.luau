@@ -1,12 +1,11 @@
 --!native
 --!optimize 2
 
-local ChunkTypes = require("./ChunkTypes")
-local Types = require("./Types")
+local Types = require("@self/Types")
 
-local chunkReaders = require("./chunks")
-local crc32 = require("./crc32")
-local inflate = require("./inflate")
+local chunkReaders = require("@self/chunks")
+local crc32 = require("@self/crc32")
+local zlib = require("@self/zlib")
 
 local COLOR_TYPE_CHANNELS = {
 	[0] = 1,
@@ -21,26 +20,30 @@ local INTERLACE_COL_START = { 0, 4, 0, 2, 0, 1, 0 }
 local INTERLACE_ROW_INCR = { 8, 8, 8, 4, 4, 2, 2 }
 local INTERLACE_COL_INCR = { 8, 8, 4, 4, 2, 2, 1 }
 
+-- https://github.com/Kampfkarren/selene/issues/584
+-- selene: allow(bad_string_escape)
+local SIGNATURE = "\x89PNG\x0D\x0A\x1A\x0A"
+
 export type PNG = Types.PNG
-export type Color = Types.Color
 
 export type DecodeOptions = {
 	allowIncorrectCRC: boolean?,
 }
 
+export type EncodeOptions = {
+	width: number,
+	height: number,
+}
+
 local function decode(buf: buffer, options: DecodeOptions?): PNG
 	local bufLen = buffer.len(buf)
 	assert(bufLen >= 8, "not a PNG")
+	assert(buffer.readstring(buf, 0, 8) == SIGNATURE, "not a PNG")
 
-	-- https://github.com/Kampfkarren/selene/issues/584
-	-- selene: allow(bad_string_escape)
-	assert(buffer.readstring(buf, 0, 8) == "\x89PNG\x0D\x0A\x1A\x0A", "not a PNG")
-
-	local chunks: { Types.Chunk } = table.create(3) -- IHDR, IDAT, IEND
+	local chunks: { Types.Chunk } = table.create(3) -- minimal: IHDR, IDAT, IEND
 	local offset = 8
 
 	local skipCRC = options ~= nil and options.allowIncorrectCRC == true
-
 	repeat
 		local dataLength = bit32.byteswap(buffer.readu32(buf, offset))
 		local chunkType = buffer.readstring(buf, offset + 4, 4)
@@ -66,11 +69,13 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 	for _, chunk in chunks do
 		local t = chunk.type
 		if bit32.extract(string.byte(t, 1, 1), 5) == 0 then
-			assert(t == "IHDR" or t == "IDAT" or t == "PLTE" or t == "IEND", `unhandled critical chunk {t}`)
+			if t ~= "IHDR" and t ~= "IDAT" and t ~= "PLTE" and t ~= "IEND" then
+				error(`unhandled critical chunk {t}`)
+			end
 		end
 	end
 
-	local header: ChunkTypes.IHDR
+	local header: Types.IHDRChunk
 	local headerChunk = chunks[1]
 	assert(headerChunk.type == "IHDR", "first chunk must be IHDR")
 	for i = 2, #chunks do
@@ -95,7 +100,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 	assert(dataChunkIndex0 > 0, "no IDAT chunks")
 	assert(compressedDataLength > 0, "no image data in IDAT chunks")
 
-	local palette: ChunkTypes.PLTE?
+	local palette: Types.PLTEChunk?
 	local paletteChunkIndex = -1
 	for i, chunk in chunks do
 		if chunk.type == "PLTE" then
@@ -110,7 +115,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 		assert(palette ~= nil, "color type requires a PLTE chunk")
 	end
 
-	local transparencyData: ChunkTypes.tRNS?
+	local transparencyData: Types.tRNSChunk?
 	for i, chunk in chunks do
 		if chunk.type == "tRNS" then
 			assert(transparencyData == nil, "multiple tRNS chunks are not allowed")
@@ -172,7 +177,7 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 
 	local idx = 0
 	local working = buffer.create(rawSize)
-	local inflatedSize = inflate(compressedData, working)
+	local inflatedSize = zlib.inflate(compressedData, working)
 	assert(inflatedSize == rawSize, "decompressed data size mismatch")
 
 	local rgba8 = buffer.create(width * height * 4)
@@ -328,16 +333,14 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 		end
 	end
 
-	local function readPixel(x: number, y: number): Types.Color
+	local function readPixel(x: number, y: number)
 		assert(x >= 1 and x <= width and y >= 1 and y <= height, "pixel out of range")
 
 		local i = ((y - 1) * width + x - 1) * 4
-		return {
-			r = buffer.readu8(rgba8, i),
-			g = buffer.readu8(rgba8, i + 1),
-			b = buffer.readu8(rgba8, i + 2),
-			a = buffer.readu8(rgba8, i + 3),
-		}
+		return buffer.readu8(rgba8, i),
+			buffer.readu8(rgba8, i + 1),
+			buffer.readu8(rgba8, i + 2),
+			buffer.readu8(rgba8, i + 3)
 	end
 
 	return {
@@ -348,6 +351,60 @@ local function decode(buf: buffer, options: DecodeOptions?): PNG
 	}
 end
 
+local function encode(pixels: buffer, options: EncodeOptions): buffer
+	local width = options.width
+	local height = options.height
+
+	local dataSize = buffer.len(pixels)
+	local expectSize = width * height * 4
+	assert(dataSize == expectSize, `expected {expectSize} bytes, got {dataSize} bytes`)
+
+	local imageDataRowSize = width * 4 + 1
+	local imageData = buffer.create(height * imageDataRowSize)
+	for row = 0, height - 1 do
+		local sourceOffset = row * width * 4
+		local targetOffset = row * imageDataRowSize
+		buffer.writeu8(imageData, targetOffset, 0) -- filter method = 0
+		buffer.copy(imageData, targetOffset + 1, pixels, sourceOffset, 4 * width)
+	end
+
+	local imageDataDeflated, imageDataDeflatedLength = zlib.deflate(imageData)
+	local outputLength = 8 -- signature
+		+ 25 -- IHDR
+		+ (8 + imageDataDeflatedLength + 4) -- IDAT
+		+ 12 -- IEND
+
+	local output = buffer.create(outputLength)
+	buffer.writestring(output, 0, SIGNATURE)
+
+	-- IHDR
+	buffer.writeu32(output, 8, bit32.byteswap(13)) -- chunk length
+	buffer.writestring(output, 12, "IHDR")
+	buffer.writeu32(output, 16, bit32.byteswap(width))
+	buffer.writeu32(output, 20, bit32.byteswap(height))
+	buffer.writeu8(output, 24, 8) -- 8-bit depth
+	buffer.writeu8(output, 25, 6) -- rgba color
+	buffer.writeu8(output, 26, 0) -- deflate compression
+	buffer.writeu8(output, 27, 0) -- adaptive filtering
+	buffer.writeu8(output, 28, 0) -- non-interlaced
+	buffer.writeu32(output, 29, bit32.byteswap(crc32(output, 12, 28)))
+
+	-- IDAT
+	buffer.writeu32(output, 33, bit32.byteswap(imageDataDeflatedLength))
+	buffer.writestring(output, 37, "IDAT")
+	buffer.copy(output, 41, imageDataDeflated, 0, imageDataDeflatedLength)
+	local x = 41 + imageDataDeflatedLength
+	buffer.writeu32(output, x, bit32.byteswap(crc32(output, 37, x - 1)))
+
+	-- IEND
+	buffer.writeu32(output, x + 4, 0)
+	buffer.writestring(output, x + 8, "IEND")
+	buffer.writeu32(output, x + 12, 0x826042AE)
+
+	return output
+end
+
 return {
 	decode = decode,
+	encode = encode,
 }

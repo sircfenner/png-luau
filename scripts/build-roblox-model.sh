@@ -2,11 +2,15 @@
 
 set -e
 
-SOURCE=$1
-OUTPUT=$2
+TMP="build/roblox"
 
-if [ ! -d $SOURCE ]; then
-	scripts/build-wally-package.sh
-fi
+mkdir $TMP
+cp -r src $TMP/src
+cp model.project.json $TMP/model.project.json
 
-rojo build $SOURCE/default.project.json -o $OUTPUT
+darklua process --config .darklua-strict.json $TMP $TMP
+stylua $TMP
+
+rojo build $TMP/model.project.json -o build/png.rbxm
+
+rm -rf $TMP

@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 
-const errors = require("./errors.json");
+const errors = require("./decodeErrors.json");
 
 const imagesPath = "./test/images";
 const outputPath = "./temp/tests.json";

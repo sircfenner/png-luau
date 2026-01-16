@@ -6,11 +6,11 @@ TMP="build/roblox"
 
 mkdir $TMP
 cp -r src $TMP/src
-cp model.project.json $TMP/model.project.json
+cp default.project.json $TMP/default.project.json
 
 darklua process --config .darklua-strict.json $TMP $TMP
 stylua $TMP
 
-rojo build $TMP/model.project.json -o build/png.rbxm
+rojo build $TMP/default.project.json -o build/png.rbxm
 
 rm -rf $TMP

@@ -1,6 +1,6 @@
 [tools]
 darklua = { github = "seaofvoices/darklua", version = "=0.17.3" }
-luau-lsp = { github = "JohnnyMorganz/luau-lsp", version = "=1.59.0" }
+luau-lsp = { github = "JohnnyMorganz/luau-lsp", version = "=1.60.1" }
 lune = { github = "lune-org/lune", version = "=0.10.4" }
 rojo = { github = "rojo-rbx/rojo", version = "=7.6.1" }
 selene = { github = "Kampfkarren/selene", version = "=0.29.0" }
